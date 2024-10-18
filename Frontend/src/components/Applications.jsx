@@ -1,0 +1,86 @@
+import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'react-toastify';
+import {Link} from "react-router-dom"
+import { clearAllApplicationErrors, deleteApplication, fetchEmployerApplications, resetApplicationSlice } from '../store/slices/applicationSlice';
+import Spinner from './Spinner';
+
+const Applications = () => {
+  const {isAuthenticated} =useSelector(state=>state.user);
+  const {applications,loading,error,message}=useSelector(state=>state.applications)
+  console.log(applications)
+  const dispatch=useDispatch()
+
+  useEffect(()=>{
+ if(error){
+  toast.error(error)
+  dispatch(clearAllApplicationErrors())
+  
+ }
+ if(message){
+toast.success(message)
+dispatch(resetApplicationSlice())
+ }
+ dispatch(fetchEmployerApplications())
+  },[dispatch,error,message])
+
+
+const handleDeleteApplication=(id)=>{
+  dispatch(deleteApplication(id))
+}
+
+  return (
+    <>
+{
+  loading ?(<Spinner/>):(
+    applications && applications.length<=0 ? (<h1>You have no application from job seeeker</h1>):(
+
+      <>
+      <div className="account_components">
+      <h3>applications for Posted jobs</h3>
+          <div className="applications_container">
+           {
+               applications.map(element=>{
+                return (
+                  <div className="card">
+                    <p className="sub-sec">
+                      <span>job Title</span> {element.jobInfo.jobTitle}
+                    </p>
+                    <p className="sub-sec">
+                      <span>Applicant's Name:</span> {element.jobSeekerInfo.name}
+                    </p>
+                    <p className="sub-sec">
+                      <span>Applicant's  Email</span> {element.jobSeekerInfo.email}
+                    </p>
+                    <p className="sub-sec">
+                      <span>Applicant's  Phone</span> {element.jobSeekerInfo.phone}
+                    </p>
+                    <p className="sub-sec">
+                      <span>Applicant's  Address</span> {element.jobSeekerInfo.address}
+                    </p>
+                    <p className="sub-sec">
+                      <span>Applicant's  Coverletter</span> 
+                      <textarea value={element.jobSeekerInfo.coverLetter} rows={5} disabled></textarea>
+                    </p>
+                    <p className="sub-sec">
+                      <span>job Title</span> {element.jobInfo.jobTitle}
+                    </p>
+                    <div className="btn-wrapper">
+                      <button className='outline_btn' onClick={()=>handleDeleteApplication(element._id)}> Delete Button</button>
+                    <Link to={element.jobSeekerInfo && element.jobSeekerInfo.resume.url} className='btn' target="_blank"> View Resume</Link>
+                    </div>
+                  </div>
+                )
+               })
+           }
+          </div>
+      </div>
+      </>
+    )
+  )
+}
+    </>
+  )
+}
+
+export default Applications
